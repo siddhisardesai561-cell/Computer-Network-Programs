@@ -99,7 +99,25 @@ int main()
     return 0;
 }
 
+/* Outout :
 
+RECEIVER SIDE 
+Enter total number of codeword bits: 11
+Enter received codeword: 0 0 1 0 1 0 1 0 0 1 1
+
+Received Codeword : 00101010011
+
+Redundant Bits:
+R1 = 0
+R2 = 0
+R4 = 0
+R8 = 0
+
+Error Position : 0
+No Error Detected.
+
+Corrected Codeword : 00101010011
+Original Data : 1101011 *\
 
 
 
