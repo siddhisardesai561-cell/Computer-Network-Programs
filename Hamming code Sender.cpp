@@ -82,6 +82,25 @@ for (int i = 1; i <= n; i++)
 }
 
 
+ /*Output : 
+ 
+SENDER SIDE 
+Enter number of data bits: 7
+Enter data bits: 1 1 0 1 0 1 1
+
+Number of Data Bits      : 7
+Number of Redundant Bits : 4
+Total Codeword Bits      : 11
+
+Redundant Bits:
+R1 = 0
+R2 = 0
+R4 = 0
+R8 = 0
+
+Hamming Codeword : 00101010011 */
+
+
 
 
 
