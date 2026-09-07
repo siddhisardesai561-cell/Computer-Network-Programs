@@ -2,118 +2,217 @@
 #include <string>
 using namespace std;
 
-// Convert decimal number to 8-bit binary
-string decimalToBinary(int n)
+// Check whether the IPv4 binary address is valid
+bool isValid(string ip)
 {
-    string binary = "";
+    // Format: 8 bits.8 bits.8 bits.8 bits = 35 characters
+    if (ip.length() != 35)
+        return false;
 
-    for (int i = 7; i >= 0; i--)
+    int bits = 0;
+    int dots = 0;
+
+    for (int i = 0; i < ip.length(); i++)
     {
-        if (n & (1 << i))
-            binary += '1';
+        if (ip[i] == '0' || ip[i] == '1')
+        {
+            bits++;
+        }
+        else if (ip[i] == '.')
+        {
+            dots++;
+
+            // Every octet must have exactly 8 bits
+            if (bits != 8)
+                return false;
+
+            bits = 0;
+        }
         else
-            binary += '0';
+        {
+            return false;
+        }
     }
 
-    return binary;
+    return (bits == 8 && dots == 3);
 }
 
-// Convert complete IP address to binary
-string ipToBinary(int a, int b, int c, int d)
+// Convert 8-bit binary string to decimal
+int binaryToDecimal(string binary)
 {
-    return decimalToBinary(a) + "." +
-           decimalToBinary(b) + "." +
-           decimalToBinary(c) + "." +
-           decimalToBinary(d);
+    int decimal = 0;
+
+    for (int i = 0; i < 8; i++)
+    {
+        decimal = decimal * 2 + (binary[i] - '0');
+    }
+
+    return decimal;
 }
 
-// Check whether IPv4 address is valid
-bool isValid(int a, int b, int c, int d)
+// Add dots after every 8 bits
+string addDots(string binary)
 {
-    return (a >= 0 && a <= 255 &&
-            b >= 0 && b <= 255 &&
-            c >= 0 && c <= 255 &&
-            d >= 0 && d <= 255);
+    string result = "";
+
+    for (int i = 0; i < 32; i++)
+    {
+        result += binary[i];
+
+        if ((i + 1) % 8 == 0 && i != 31)
+            result += '.';
+    }
+
+    return result;
+}
+
+// Convert 32-bit binary address to dotted decimal
+string binaryToDottedDecimal(string binary)
+{
+    string result = "";
+
+    for (int i = 0; i < 4; i++)
+    {
+        string octet = binary.substr(i * 8, 8);
+
+        result += to_string(binaryToDecimal(octet));
+
+        if (i != 3)
+            result += '.';
+    }
+
+    return result;
 }
 
 int main()
 {
-    int a, b, c, d;
+    string ip;
 
-    cout << "Enter IPv4 address in decimal form: ";
-    cin >> a >> b >> c >> d;
+    cout << "Enter IPv4 address in binary form:" << endl;
+    cout << "Example: 11000000.10101000.00000001.00000001" << endl;
 
-    // Validate IP
-    if (!isValid(a, b, c, d))
+    cin >> ip;
+
+    // Check validity
+    if (!isValid(ip))
     {
         cout << "\nInvalid IPv4 Address!" << endl;
         return 0;
     }
 
-    cout << "\nValid IPv4 Address!" << endl;
+    // Extract four octets
+    string octet[4];
+    int pos = 0;
 
-    // Display decimal IP
-    cout << "IPv4 Address (Decimal): "
-         << a << "." << b << "." << c << "." << d << endl;
-
-    // Convert to binary
-    cout << "IPv4 Address (Binary): "
-         << ipToBinary(a, b, c, d) << endl;
-
-    // Class A
-    if (a >= 1 && a <= 126)
+    for (int i = 0; i < 4; i++)
     {
-        cout << "\nIP Class: Class A" << endl;
-        cout << "Default Subnet Mask: 255.0.0.0" << endl;
-
-        cout << "Network ID: "
-             << a << ".0.0.0" << endl;
-
-        cout << "Host ID: "
-             << "0." << b << "." << c << "." << d << endl;
+        octet[i] = ip.substr(pos, 8);
+        pos += 9;
     }
 
-    // Class B
-    else if (a >= 128 && a <= 191)
+    // Get first octet in decimal
+    int firstOctet = binaryToDecimal(octet[0]);
+
+    string ipClass;
+    string defaultMask;
+    int networkBits;
+
+    // Identify IPv4 class
+    if (firstOctet >= 1 && firstOctet <= 126)
     {
-        cout << "\nIP Class: Class B" << endl;
-        cout << "Default Subnet Mask: 255.255.0.0" << endl;
-
-        cout << "Network ID: "
-             << a << "." << b << ".0.0" << endl;
-
-        cout << "Host ID: "
-             << "0.0." << c << "." << d << endl;
+        ipClass = "Class A";
+        defaultMask = "255.0.0.0";
+        networkBits = 8;
     }
-
-    // Class C
-    else if (a >= 192 && a <= 223)
+    else if (firstOctet >= 128 && firstOctet <= 191)
     {
-        cout << "\nIP Class: Class C" << endl;
-        cout << "Default Subnet Mask: 255.255.255.0" << endl;
-
-        cout << "Network ID: "
-             << a << "." << b << "." << c << ".0" << endl;
-
-        cout << "Host ID: "
-             << "0.0.0." << d << endl;
+        ipClass = "Class B";
+        defaultMask = "255.255.0.0";
+        networkBits = 16;
     }
-
-    // Class D
-    else if (a >= 224 && a <= 239)
+    else if (firstOctet >= 192 && firstOctet <= 223)
     {
-        cout << "\nIP Class: Class D" << endl;
+        ipClass = "Class C";
+        defaultMask = "255.255.255.0";
+        networkBits = 24;
+    }
+    else if (firstOctet >= 224 && firstOctet <= 239)
+    {
+        cout << "\nValid IPv4 Address" << endl;
+        cout << "Class: Class D" << endl;
         cout << "Used for Multicast" << endl;
         cout << "Network ID and Host ID are not applicable." << endl;
+        return 0;
     }
-
-    // Class E
     else
     {
-        cout << "\nIP Class: Class E" << endl;
+        cout << "\nValid IPv4 Address" << endl;
+        cout << "Class: Class E" << endl;
         cout << "Reserved for Experimental Use" << endl;
         cout << "Network ID and Host ID are not applicable." << endl;
+        return 0;
     }
+
+    // Create 32-bit binary address without dots
+    string binaryIP = "";
+
+    for (int i = 0; i < 4; i++)
+    {
+        binaryIP += octet[i];
+    }
+
+    string netID = "";
+    string hostID = "";
+
+    // Calculate Network ID and Host ID
+    for (int i = 0; i < 32; i++)
+    {
+        if (i < networkBits)
+        {
+            // Network part remains same, host part becomes 0
+            netID += binaryIP[i];
+            hostID += '0';
+        }
+        else
+        {
+            // Network part becomes 0, host part remains same
+            netID += '0';
+            hostID += binaryIP[i];
+        }
+    }
+
+    // Display results
+    cout << "\n========== OUTPUT ==========" << endl;
+
+    cout << "\nIPv4 Address (Binary): "
+         << ip << endl;
+
+    cout << "IPv4 Address (Decimal): "
+         << binaryToDottedDecimal(binaryIP) << endl;
+
+    cout << "\nIP Class: "
+         << ipClass << endl;
+
+    cout << "Default Subnet Mask: "
+         << defaultMask << endl;
+
+    // Network ID
+    cout << "\nNetwork ID:" << endl;
+
+    cout << "Binary  : "
+         << addDots(netID) << endl;
+
+    cout << "Decimal : "
+         << binaryToDottedDecimal(netID) << endl;
+
+    // Host ID
+    cout << "\nHost ID:" << endl;
+
+    cout << "Binary  : "
+         << addDots(hostID) << endl;
+
+    cout << "Decimal : "
+         << binaryToDottedDecimal(hostID) << endl;
 
     return 0;
 }
