@@ -1,25 +1,26 @@
-#include <stdio.h>
-#include <string.h>
+#include <iostream>
+#include <string>
+using namespace std;
 
 int main()
 {
-    char data[100], stuffedData[200];
-    int i, j = 0, count = 0;
+    string data, stuffedData = "";
+    int count = 0;
 
-    printf("Enter the data bits: ");
-    scanf("%s", data);
+    cout << "Enter the data bits: ";
+    cin >> data;
 
-    for(i = 0; data[i] != '\0'; i++)
+    for (int i = 0; i < data.length(); i++)
     {
-        stuffedData[j++] = data[i];
+        stuffedData += data[i];
 
-        if(data[i] == '1')
+        if (data[i] == '1')
         {
             count++;
 
-            if(count == 5)
+            if (count == 5)
             {
-                stuffedData[j++] = '0';   // Stuff a 0
+                stuffedData += '0';  // Stuff a 0
                 count = 0;
             }
         }
@@ -29,10 +30,13 @@ int main()
         }
     }
 
-    stuffedData[j] = '\0';
-
-    printf("Original Data : %s\n", data);
-    printf("Stuffed Data  : %s\n", stuffedData);
+    cout << "Original Data : " << data << endl;
+    cout << "Stuffed Data  : " << stuffedData << endl;
 
     return 0;
 }
+*/
+Enter the data bits: 11111011111
+Original Data : 11111011111
+Stuffed Data  : 1111100111110
+*/
