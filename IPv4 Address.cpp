@@ -216,3 +216,25 @@ int main()
 
     return 0;
 }
+
+output :
+
+Enter IPv4 address in binary form:
+11000000.10101000.00000001.00000001
+
+========== OUTPUT ==========
+
+IPv4 Address (Binary): 11000000.10101000.00000001.00000001
+IPv4 Address (Decimal): 192.168.1.1
+
+IP Class: Class C
+Default Subnet Mask: 255.255.255.0
+
+Network ID:
+Binary  : 11000000.10101000.00000001.00000000
+Decimal : 192.168.1.0
+
+Host ID:
+Binary  : 00000000.00000000.00000000.00000001
+Decimal : 0.0.0.1
+PS C:\Users\siddh\OneDrive\Desktop\CPP> 
