@@ -165,3 +165,37 @@ int main() {
 
     return 0;
 }
+
+
+output : 
+
+Enter number of nodes (minimum 7): 7
+Enter number of edges: 9
+Enter source destination cost:
+1 2 2
+1 3 4
+2 3 1
+2 4 7
+3 5 3
+4 5 2
+4 6 1
+5 7 5
+6 7 2
+  ========== ROUTING TABLE ==========
+
+Source      Destination    Shortest Path
+------------------------------------------
+1           2              2
+1           3              3
+1           4              10
+1           5              6
+1           6              11
+1           7              13
+
+Enter destination node: 7
+
+========== SHORTEST PATH ==========
+Source: 1
+Destination: 7
+Shortest Path: 1 -> 2 -> 3 -> 5 -> 7
+Total Cost: 11
