@@ -36,6 +36,7 @@ int main()
     return 0;
 }
 */
+    output :
 Enter the data bits: 11111011111
 Original Data : 11111011111
 Stuffed Data  : 1111100111110
