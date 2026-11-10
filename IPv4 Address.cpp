@@ -1,123 +1,84 @@
 #include <iostream>
 #include <string>
+#include <sstream>
 using namespace std;
 
-// Check whether the IPv4 binary address is valid
-bool isValid(string ip)
+// Check if IPv4 address is valid and extract octets
+bool isValid(string ip, int octet[])
 {
-    // Format: 8 bits.8 bits.8 bits.8 bits = 35 characters
-    if (ip.length() != 35)
-        return false;
+    stringstream ss(ip);
+    string part;
+    int count = 0;
 
-    int bits = 0;
-    int dots = 0;
-
-    for (int i = 0; i < ip.length(); i++)
+    while (getline(ss, part, '.'))
     {
-        if (ip[i] == '0' || ip[i] == '1')
-        {
-            bits++;
-        }
-        else if (ip[i] == '.')
-        {
-            dots++;
+        // More than 4 octets
+        if (count >= 4 || part.empty())
+            return false;
 
-            // Every octet must have exactly 8 bits
-            if (bits != 8)
+        // Check all characters are digits
+        for (char ch : part)
+        {
+            if (!isdigit(ch))
                 return false;
-
-            bits = 0;
         }
-        else
+
+        int num;
+
+        try
+        {
+            num = stoi(part);
+        }
+        catch (...)
         {
             return false;
         }
+
+        // Each octet must be between 0 and 255
+        if (num < 0 || num > 255)
+            return false;
+
+        octet[count] = num;
+        count++;
     }
 
-    return (bits == 8 && dots == 3);
+    // IPv4 must have exactly 4 octets
+    return count == 4;
 }
 
-// Convert 8-bit binary string to decimal
-int binaryToDecimal(string binary)
+// Convert integer array to dotted decimal string
+string toDottedDecimal(int arr[])
 {
-    int decimal = 0;
-
-    for (int i = 0; i < 8; i++)
-    {
-        decimal = decimal * 2 + (binary[i] - '0');
-    }
-
-    return decimal;
-}
-
-// Add dots after every 8 bits
-string addDots(string binary)
-{
-    string result = "";
-
-    for (int i = 0; i < 32; i++)
-    {
-        result += binary[i];
-
-        if ((i + 1) % 8 == 0 && i != 31)
-            result += '.';
-    }
-
-    return result;
-}
-
-// Convert 32-bit binary address to dotted decimal
-string binaryToDottedDecimal(string binary)
-{
-    string result = "";
-
-    for (int i = 0; i < 4; i++)
-    {
-        string octet = binary.substr(i * 8, 8);
-
-        result += to_string(binaryToDecimal(octet));
-
-        if (i != 3)
-            result += '.';
-    }
-
-    return result;
+    return to_string(arr[0]) + "." +
+           to_string(arr[1]) + "." +
+           to_string(arr[2]) + "." +
+           to_string(arr[3]);
 }
 
 int main()
 {
     string ip;
+    int octet[4];
 
-    cout << "Enter IPv4 address in binary form:" << endl;
-    cout << "Example: 11000000.10101000.00000001.00000001" << endl;
-
+    cout << "Enter IPv4 address in decimal form: ";
     cin >> ip;
 
-    // Check validity
-    if (!isValid(ip))
+    // Validate IP address
+    if (!isValid(ip, octet))
     {
         cout << "\nInvalid IPv4 Address!" << endl;
         return 0;
     }
 
-    // Extract four octets
-    string octet[4];
-    int pos = 0;
+    cout << "\nValid IPv4 Address!" << endl;
 
-    for (int i = 0; i < 4; i++)
-    {
-        octet[i] = ip.substr(pos, 8);
-        pos += 9;
-    }
-
-    // Get first octet in decimal
-    int firstOctet = binaryToDecimal(octet[0]);
+    int firstOctet = octet[0];
 
     string ipClass;
     string defaultMask;
     int networkBits;
 
-    // Identify IPv4 class
+    // Identify IP Class
     if (firstOctet >= 1 && firstOctet <= 126)
     {
         ipClass = "Class A";
@@ -138,57 +99,54 @@ int main()
     }
     else if (firstOctet >= 224 && firstOctet <= 239)
     {
-        cout << "\nValid IPv4 Address" << endl;
         cout << "Class: Class D" << endl;
-        cout << "Used for Multicast" << endl;
+        cout << "Used for Multicast." << endl;
         cout << "Network ID and Host ID are not applicable." << endl;
         return 0;
     }
     else
     {
-        cout << "\nValid IPv4 Address" << endl;
         cout << "Class: Class E" << endl;
-        cout << "Reserved for Experimental Use" << endl;
+        cout << "Reserved for Experimental Use." << endl;
         cout << "Network ID and Host ID are not applicable." << endl;
         return 0;
     }
 
-    // Create 32-bit binary address without dots
-    string binaryIP = "";
+    // Arrays for Network ID and Host ID
+    int netID[4] = {0, 0, 0, 0};
+    int hostID[4] = {0, 0, 0, 0};
 
-    for (int i = 0; i < 4; i++)
+    // Calculate Network ID and Host ID according to class
+    if (networkBits == 8)          // Class A
     {
-        binaryIP += octet[i];
+        netID[0] = octet[0];
+
+        hostID[1] = octet[1];
+        hostID[2] = octet[2];
+        hostID[3] = octet[3];
+    }
+    else if (networkBits == 16)    // Class B
+    {
+        netID[0] = octet[0];
+        netID[1] = octet[1];
+
+        hostID[2] = octet[2];
+        hostID[3] = octet[3];
+    }
+    else if (networkBits == 24)    // Class C
+    {
+        netID[0] = octet[0];
+        netID[1] = octet[1];
+        netID[2] = octet[2];
+
+        hostID[3] = octet[3];
     }
 
-    string netID = "";
-    string hostID = "";
-
-    // Calculate Network ID and Host ID
-    for (int i = 0; i < 32; i++)
-    {
-        if (i < networkBits)
-        {
-            // Network part remains same, host part becomes 0
-            netID += binaryIP[i];
-            hostID += '0';
-        }
-        else
-        {
-            // Network part becomes 0, host part remains same
-            netID += '0';
-            hostID += binaryIP[i];
-        }
-    }
-
-    // Display results
+    // Display output
     cout << "\n========== OUTPUT ==========" << endl;
 
-    cout << "\nIPv4 Address (Binary): "
+    cout << "\nIPv4 Address: "
          << ip << endl;
-
-    cout << "IPv4 Address (Decimal): "
-         << binaryToDottedDecimal(binaryIP) << endl;
 
     cout << "\nIP Class: "
          << ipClass << endl;
@@ -197,44 +155,26 @@ int main()
          << defaultMask << endl;
 
     // Network ID
-    cout << "\nNetwork ID:" << endl;
-
-    cout << "Binary  : "
-         << addDots(netID) << endl;
-
-    cout << "Decimal : "
-         << binaryToDottedDecimal(netID) << endl;
+    cout << "\nNetwork ID: "
+         << toDottedDecimal(netID) << endl;
 
     // Host ID
-    cout << "\nHost ID:" << endl;
-
-    cout << "Binary  : "
-         << addDots(hostID) << endl;
-
-    cout << "Decimal : "
-         << binaryToDottedDecimal(hostID) << endl;
+    cout << "Host ID: "
+         << toDottedDecimal(hostID) << endl;
 
     return 0;
 }
 
-output :
+/*Enter IPv4 address in decimal form: 129.45.32.3
 
-Enter IPv4 address in binary form:
-11000000.10101000.00000001.00000001
+Valid IPv4 Address!
 
 ========== OUTPUT ==========
 
-IPv4 Address (Binary): 11000000.10101000.00000001.00000001
-IPv4 Address (Decimal): 192.168.1.1
+IPv4 Address: 129.45.32.3
 
-IP Class: Class C
-Default Subnet Mask: 255.255.255.0
+IP Class: Class B
+Default Subnet Mask: 255.255.0.0
 
-Network ID:
-Binary  : 11000000.10101000.00000001.00000000
-Decimal : 192.168.1.0
-
-Host ID:
-Binary  : 00000000.00000000.00000000.00000001
-Decimal : 0.0.0.1
-PS C:\Users\siddh\OneDrive\Desktop\CPP> 
+Network ID: 129.45.0.0
+Host ID: 0.0.32.3
